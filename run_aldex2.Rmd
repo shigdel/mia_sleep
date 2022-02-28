@@ -1,0 +1,63 @@
+# Aldex2
+
+```{r}
+# table(selected$sleep_cat)
+
+# tse_subset <- tse[sample(nrow(tse), 100), sample(ncol(tse), 100)]
+
+tse_aldex <- tse
+colData(tse_aldex)$sleep_cat <- colData(tse)$sleep_cat == "0"
+
+# test clr transform generation on subset
+x <- aldex.clr(
+  reads = assay(tse),
+  conds = colData(tse)$sleep_cat, 
+  # 128 recommended for ttest, 1000 for rigorous effect size calculation
+  mc.samples = 128, 
+  denom = "all",
+  verbose = FALSE
+)
+
+# run t-test on subset
+x_tt <- aldex.ttest(
+  x, 
+  paired.test = FALSE, 
+  verbose = FALSE)
+
+# ANOVA-like test for multiple categories
+# x_kw_subset <- aldex.kw(x_subset,
+#                         useMC = TRUE,
+#                         verbose = FALSE)
+
+# estimate effect size
+x_effect <- aldex.effect(x,
+                         CI = FALSE,
+                         useMC = FALSE,
+                         verbose = FALSE)
+
+# combine output from t-test and effect estimate
+aldex_out <- data.frame(x_tt, x_effect)
+
+par(mfrow = c(1, 2))
+aldex.plot(
+  aldex_out, 
+  type = "MA", 
+  test = "welch", 
+  xlab = "Log-ratio abundance",
+  ylab = "Difference",
+  cutoff = 0.05
+)
+aldex.plot(
+  aldex_out, 
+  type = "MW", 
+  test = "welch",
+  xlab = "Dispersion",
+  ylab = "Difference",
+  cutoff = 0.05
+)
+
+rownames_to_column(aldex_out, "Genus") %>%
+  filter(wi.eBH <= 0.05)  %>% # here we chose the wilcoxon output rather than tt
+  dplyr::select(Genus, we.eBH, wi.eBH, effect, overlap) %>%
+  kable()
+```

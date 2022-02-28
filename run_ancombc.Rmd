@@ -1,0 +1,21 @@
+# ANCOM-BC
+
+```{r}
+otu_data_a <- makePhyloseqFromTreeSummarizedExperiment(tse)
+# otu_data_a
+
+# Aggregate to Genus level
+Genus_data <- aggregate_taxa(otu_data_a, "Genus")
+
+# Run ANCOM-BC
+out = ancombc(phyloseq = Genus_data, formula = "sleep_cat + bmi + smoke + age",
+              p_adj_method = "BH", zero_cut = 0.90, lib_cut = 1000,
+              group = "sleep_cat", struc_zero = TRUE, neg_lb = TRUE, tol = 1e-5,
+              max_iter = 100, conserve = TRUE, alpha = 0.05, global = TRUE)
+
+# out
+
+res <- out$res
+
+kable(head(res$diff_abn))
+```

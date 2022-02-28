@@ -1,0 +1,58 @@
+# Beta divesity
+
+```{r}
+tse <- runMDS(tse, FUN = vegan::vegdist, name = "PCoA_BC", exprs_values = "counts")
+
+# Create ggplot object
+p <- plotReducedDim(tse, "PCoA_BC", colour_by = "sleep_cat")
+
+# Add explained variance for each axis
+e <- attr(reducedDim(tse, "PCoA_BC"), "eig");
+rel_eig <- e/sum(e[e>0])          
+p <- p + labs(x = paste("PCoA 1 (", round(100 * rel_eig[[1]],1), "%", ")", sep = ""),
+              y = paste("PCoA 2 (", round(100 * rel_eig[[2]],1), "%", ")", sep = ""))
+
+p
+```
+
+## Aitchison distance at genus level
+
+```{r}
+# Does clr transformation. Pseudocount is added, because data contains zeros. 
+tse <- transformCounts(tse, method = "clr", pseudocount = 1)
+
+# Gets clr table
+clr_assay <- assays(tse)$clr
+
+# Transposes it to get taxa to columns
+clr_assay <- t(clr_assay)
+
+# Calculates Euclidean distances between samples. Because taxa is in columns,
+# it is used to compare different samples.
+euclidean_dist <- vegan::vegdist(clr_assay, method = "euclidean")
+
+# Does principal coordinate analysis
+euclidean_pcoa <- ecodist::pco(euclidean_dist)
+
+# Creates a data frame from principal coordinates
+euclidean_pcoa_df <- data.frame(pcoa1 = euclidean_pcoa$vectors[,1], 
+                                pcoa2 = euclidean_pcoa$vectors[,2])
+
+# Creates the plot
+euclidean_plot <- ggplot(data = euclidean_pcoa_df, aes(x=pcoa1, y=pcoa2)) +
+  geom_point() +
+  labs(x = "PC1",
+       y = "PC2",
+       title = "Euclidean PCoA with CLR transformation") +
+  theme(title = element_text(size = 12)) # makes titles smaller
+
+euclidean_plot
+```
+
+
+#Testing differences in community composition between sample groups 
+```{r}
+anova(vegan::betadisper(vegan::vegdist(t(assay(tse, "counts"))),
+                        colData(tse)$sleep_cat))
+```
+

@@ -1,0 +1,59 @@
+---
+title: "Sleep_project_discription.Rmd"
+author: "Rajesh"
+date: "28 2 2022"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+ ##Sleep disorder is associated with altered composition of oral bacteria; the RHINESSA study, Bergen, Norway
+
+Aim of the study – To study whether the composition of oral microbiota differ compared to participants those reported sleep problem vs those who did not. 
+
+
+1.	Normalization /Rarefaction (if needed)
+
+
+2.	Community diversity analysis 
+
+
+a.	Alpha diversity – with in group (sleep diorder) At genus level 
+                     Chao1, Shannon,
+b.	Beta diversity: Between group
+  (Bray–Curtis’s, UniFrac distances, and Aitchison distance) 
+(Permutational Multivariate Analysis of Variance Using Distance Matrices, PERMANOVA- function “adonis” of the vegan R package) – without adjustment 
+Community detection 
+
+3.	Identifying differentially abundant features according to status of Sleeping disorder, at the genus level 
+•	Methods based on pairwise comparisons of features (ANCOM-BC)
+•	Aldex2
+•	MaAsLin 2
+Assessing overlap across three different approaches
+
+4. If relevant implementing other Machine learning approaches 
+Support vector machine (SVM)
+Random Forests (RF) classifier
+Extreme Gradient Boosting (XGBoost)
+
+
+The study population includes 477 adult participants (≥18 years of age) investigated as part of the RHINESSA generation study (www.rhinessa.net) in Bergen, Norway. The participants were examined in 2014-2015 with questionnaires, interviews, and clinical examinations. We collected data on age, gender, educational level, smoking status and use of antibiotics in the four weeks before clinical examination. Fourteen participants were excluded from further analyses due to the use of antibiotics in the last four weeks before gingival sampling. The questionnaires are available at www.rhinessa.net
+
+ ## Questionaries related to the sleep disorder
+ 
+1.	How often do you snore loudly and disturbingly? RHINESSA Ans: 1=never or almost never/2=less than once a week/3=once or twice a week/4=3-5 nights/days a week/5=almost every day or night - (snoring)
+2.	How often do you have heartburn or belching when gone to bed? RHINESSA Ans: 1=never or almost never/2=less than once a week/3=once or twice a week/4=3-5 nights/days a week/5=almost every day or night- (Nocturnal gastro-esophageal reflux- ngGOR)
+3.	How often do you have difficulty getting to sleep at night? RHINESSA 1=never or almost never/2=less than once a week/3=once or twice a week/4=3-5 nights/days a week/5=almost every day or night
+
+Based on above two (1 and 2) questions we made a new variable called sleep_cat with 4 group 
+
+1. No snoring and no Ngor  -  0 
+2. Only snoring - 1
+3. Only nGoR -2
+4. Both snoring and nGoR- 3

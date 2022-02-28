@@ -1,0 +1,99 @@
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+```{r}
+perCellQCMetrics(tse)
+tse <- addPerCellQC(tse)
+# colData(tse)
+
+p1 <- ggplot(as.data.frame(colData(tse))) +
+  geom_histogram(aes(x = sum), color = "black", fill = "gray", bins = 30) +
+  labs(x = "Library size", y = "Frequency (n)") + 
+  scale_x_log10(breaks = scales::trans_breaks("log10", function(x) 10^x), 
+  labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), # Removes the grid
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black")) # Adds y-axis
+
+
+p1
+
+df <- as.data.frame(colData(tse)) %>%
+  arrange(sum) %>%
+  mutate(index = 1:n())
+p2 <- ggplot(df, aes(y = index, x = sum/1e6)) +
+  geom_point() +  
+  labs(x = "Library size (million reads)", y = "Sample index") +  
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), # Removes the grid
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black")) # Adds y-axis
+```
+
+
+```{r}
+p <- p1 + p2
+p
+```
+
+
+
+
+```{r}
+# plot library size by sample id to check for uniform distribution
+plotColData(tse, "sum", "sleep_cat") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(y = "Library size (N)", x = "Sample ID")
+
+
+tse <- mia::estimateRichness(tse, 
+                             abund_values = "counts", 
+                             index = "observed", 
+                             name="observed")
+#diversity
+
+tse <- mia::estimateDiversity(tse, 
+                              abund_values = "counts",
+                              index = "shannon", 
+                              name = "shannon")
+#evenness
+
+tse <- estimateEvenness(tse, 
+                        abund_values = "counts", 
+                        index="simpson")
+
+#Dominance 
+tse <- estimateDominance(tse, 
+                         abund_values = "counts", 
+                         index="relative")
+
+
+#Rarity 
+
+tse <- mia::estimateDiversity(tse, 
+                              abund_values = "counts",
+                              index = "log_modulo_skewness")
+
+
+
+plots <- lapply(c("observed", "shannon", "simpson", "relative", "log_modulo_skewness"),
+                plotColData,
+                object = tse,
+                x = "sleep_cat",
+                colour_by = "sleep_cat")
+
+plots <- lapply(plots, "+", 
+                theme(axis.text.x = element_blank(),
+                      axis.title.x = element_blank(),
+                      axis.ticks.x = element_blank()))
+
+((plots[[1]] | plots[[2]] | plots[[3]]) / 
+    (plots[[4]] | plots[[5]] )) +
+  plot_layout(guides = "collect")
+```
